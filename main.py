@@ -13,6 +13,7 @@ import collections
 import utils
 from datetime import datetime
 import json
+import os
 
 timetable = None
 
@@ -116,3 +117,12 @@ b.close()
 
 print("[*] JSON zapisany do data.json")
 #TODO: upload ftp
+
+if not os.path.exists("archive"):
+	os.makedirs(os.path.join("archive", "overrides"))
+	os.makedirs(os.path.join("archive", "timetables"))
+
+if config.timetable_archiver:
+    archive_filename = datetime.now().strftime("%Y-%m-%d") + "-" + output['hash'] + ".json"
+    with open(os.path.join("archive", "overrides", archive_filename), "w") as f:
+        f.write(json.dumps(output))
