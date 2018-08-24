@@ -10,6 +10,7 @@ print("[*] Ładowanie programu")
 import timetable_parser
 import overrides_parser
 import collections
+import utils
 from datetime import datetime
 import json
 
@@ -71,7 +72,7 @@ output = {}
 output["_Copyright"] = "2018, Jakub Polgesek"
 output["_updateDate_min"] = min(timetable.update_dates)
 #output["_updateDate_max"] = max(timetable.update_dates)
-output["_updateDate_max"] = "[PY3 TEST]"
+output["_updateDate_max"] = "[PY3 TEST]" #TODO: remove me
 output['teachers'] = collections.OrderedDict(sorted(timetable.teachers_timetable.items()))
 output['timetable'] = timetable.timetable
 output['units'] = timetable.units_list
@@ -102,6 +103,9 @@ ts_j = json.loads(ts.read())
 ts.close()
 output['timesteps'] = ts_j
 
+#Hash current timetable before adding timestamp and overrides
+output['hash'] = utils.hash_output(output)
+
 output['overrideData'] = {}#TODO: zastepstwa
 
 
@@ -110,5 +114,5 @@ b = open("py3.json", "w")
 b.write(json.dumps(output))
 b.close()
 
-print("[*] JSON saved as data.json")
+print("[*] JSON zapisany do data.json")
 #TODO: upload ftp
