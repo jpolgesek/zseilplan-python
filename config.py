@@ -5,6 +5,9 @@ timetable_engine = "www"
 overrides_url = ""
 overrides_engine = "www"
 
+vulcan_login = ""
+vulcan_password = ""
+
 overrides_stats = True
 overrides_archiver = True
 timetable_archiver = True
