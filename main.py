@@ -3,8 +3,8 @@ import sys
 
 #sprawdz czy to python 3
 if sys.version_info < (3, 0):
-    print("Program wymaga pythona 3.x. Sorry :/")
-    sys.exit(1)
+	print("Program wymaga pythona 3.x. Sorry :/")
+	sys.exit(1)
 
 print("[*] Ładowanie programu")
 import timetable_parser
@@ -14,6 +14,7 @@ import utils
 from datetime import datetime
 import json
 import os
+import ftplib
 
 timetable = None
 
@@ -24,46 +25,46 @@ print("[*] Załadowana konfiguracja:")
 print("[*] - Silnik planu lekcji: {}".format(config.timetable_engine))
 
 if config.timetable_engine == "www":
-    print("[*] - URL planu lekcji: {}".format(config.timetable_url))
-    timetable = timetable_parser.www_parser(config.timetable_url)
+	print("[*] - URL planu lekcji: {}".format(config.timetable_url))
+	timetable = timetable_parser.www_parser(config.timetable_url)
 elif config.timetable_engine == "vulcan":
-    print("[*] - Vulcan login: {}".format(config.vulcan_login))
+	print("[*] - Vulcan login: {}".format(config.vulcan_login))
 
 print("[*] - Silnik listy zastępstw: {}".format(config.overrides_engine))
 
 if config.overrides_engine == "www":
-    print("[*] - URL listy zastępstw: {}".format(config.overrides_url))
+	print("[*] - URL listy zastępstw: {}".format(config.overrides_url))
 elif config.overrides_engine == "vulcan":
-    print("[*] - Vulcan login: {}".format(config.vulcan_login))
+	print("[*] - Vulcan login: {}".format(config.vulcan_login))
 
 if config.overrides_stats:
-    print("[*] - Statystyki zastępstw: Włączone")
+	print("[*] - Statystyki zastępstw: Włączone")
 else:
-    print("[*] - Statystyki zastępstw: Wyłączone")
+	print("[*] - Statystyki zastępstw: Wyłączone")
 
 if config.overrides_archiver:
-    print("[*] - Archiwizacja zastępstw: Włączone")
+	print("[*] - Archiwizacja zastępstw: Włączone")
 else:
-    print("[*] - Archiwizacja zastępstw: Wyłączone")
+	print("[*] - Archiwizacja zastępstw: Wyłączone")
 
 if config.timetable_archiver:
-    print("[*] - Archiwizacja planu: Włączone")
+	print("[*] - Archiwizacja planu: Włączone")
 else:
-    print("[*] - Archiwizacja planu: Wyłączone")
+	print("[*] - Archiwizacja planu: Wyłączone")
 
 if config.ftp_upload:
-    print("[*] - FTP Upload: Włączone")
+	print("[*] - FTP Upload: Włączone")
 else:
-    print("[*] - FTP Upload: Wyłączone")
+	print("[*] - FTP Upload: Wyłączone")
 
 print("[*] Rozpoczynam działanie\n")
 
 print("[*] Znalazłem {} klas".format(len(timetable.get_units_list())))
 
 for unit in timetable.units:
-    print("[*] Przetwarzam plan klasy {}".format(unit), end="")
-    timetable.parse_unit(unit)
-    print()
+	print("[*] Przetwarzam plan klasy {}".format(unit), end="")
+	timetable.parse_unit(unit)
+	print()
 
 #TODO: zbierz zastepstwa
 
@@ -83,13 +84,15 @@ tm = open("teachermap.json", "r")
 tm_j = json.loads(tm.read())
 tm.close()
 
+tm_j0 = {}
+
 # [dluga nazwa] = krotka
 for k, v in tm_j.items():
-	del tm_j[k]
-	tm_j[v] = k
+	# del tm_j[k]
+	tm_j0[v] = k
 
 #posortuj po dlugiej nazwie
-tm_j = collections.OrderedDict(sorted(tm_j.items()))
+tm_j = collections.OrderedDict(sorted(tm_j0.items()))
 
 tm_j2 = dict()
 
@@ -111,18 +114,28 @@ output['overrideData'] = {}#TODO: zastepstwa
 
 
 output['comment'] = "Wyeksportowano "+datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-b = open("py3.json", "w")
+b = open("data.json", "w")
 b.write(json.dumps(output))
 b.close()
 
 print("[*] JSON zapisany do data.json")
 #TODO: upload ftp
 
-if not os.path.exists("archive"):
-	os.makedirs(os.path.join("archive", "overrides"))
-	os.makedirs(os.path.join("archive", "timetables"))
+if config.ftp_upload:
+	ftp = ftplib.FTP(config.ftp_host)
+	ftp.login(user = config.ftp_user, passwd = config.ftp_password)
+	ftp.cwd('/')
+	ftp.storbinary('STOR data.json', open("data.json", 'rb'))
+
+if config.overrides_archiver or config.timetable_archiver:
+	if not os.path.exists("archive"):
+		os.makedirs(os.path.join("archive", "overrides"))
+		os.makedirs(os.path.join("archive", "timetables"))
 
 if config.timetable_archiver:
-    archive_filename = datetime.now().strftime("%Y-%m-%d") + "-" + output['hash'] + ".json"
-    with open(os.path.join("archive", "overrides", archive_filename), "w") as f:
-        f.write(json.dumps(output))
+	archive_filename = datetime.now().strftime("%Y-%m-%d") + "-" + output['hash'] + ".json"
+	with open(os.path.join("archive", "overrides", archive_filename), "w") as f:
+		f.write(json.dumps(output))
+	
+	ftp.cwd('/archive/timetables')
+	ftp.storbinary('STOR '+archive_filename, open(os.path.join("archive", "overrides", archive_filename), 'rb'))
