@@ -22,6 +22,7 @@ import os
 import ftplib
 import argparse
 import indexer 
+import notifications
 timetable = None
 
 print("[*] Wczytywanie konfiguracji")
@@ -142,7 +143,13 @@ output['_fetch_time'] = datetime.now().strftime("%H:%M")
 with open("data.json", "r", encoding="UTF-8") as f:
 	temp_data = json.load(f)
 	if temp_data['hash'] != output['hash']:
-		print("To jest nowy plan!")
+		print("To jest nowy plan, wywoluje notifications.start()!")
+		try:
+			notifications.target = target
+			notifications.start()
+		except:
+			print("something in notifications failed, check me!")
+			pass
 
 
 b = open("data.json", "w", encoding="UTF-8")
