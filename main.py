@@ -1,10 +1,15 @@
 #coding: utf-8
 import sys
+import time
 
 #sprawdz czy to python 3
 if sys.version_info < (3, 0):
 	print("Program wymaga pythona 3.x. Sorry :/")
 	sys.exit(1)
+
+if sys.version_info < (3, 7):
+	print("Program preferuje pythona 3.7, ale pozwoli się uruchomić na pythonie 3.x")
+	print("UWAGA! utils.hash może nie działać poprawnie.")
 
 print("[*] Ładowanie programu")
 import timetable_parser
@@ -15,11 +20,23 @@ from datetime import datetime
 import json
 import os
 import ftplib
-
+import argparse
+import indexer 
 timetable = None
 
 print("[*] Wczytywanie konfiguracji")
 import config
+
+parser = argparse.ArgumentParser()
+parser.add_argument("target")
+args = parser.parse_args()
+
+if args.target not in config.targets:
+	print("[-] Niewłaściwy target: {}".format(args.target))
+	print("[-] Właściwe: {}".format(', '.join(config.targets)))
+	exit()
+
+target = config.targets[args.target]
 
 print("[*] Załadowana konfiguracja:")
 print("[*] - Silnik planu lekcji: {}".format(config.timetable_engine))
@@ -66,15 +83,19 @@ for unit in timetable.units:
 	timetable.parse_unit(unit)
 	print()
 
-#TODO: zbierz zastepstwa
 
-#TODO: przekonwertuj
+target = config.targets[args.target]
+
+#TODO: zbierz zastepstwa
+import overrides_parser
+
+
 print("[*] Uruchamiam eksporter JSON")
-output = {}
+output = collections.OrderedDict()
 output["_Copyright"] = "2018, Jakub Polgesek"
 output["_updateDate_min"] = min(timetable.update_dates)
-#output["_updateDate_max"] = max(timetable.update_dates)
-output["_updateDate_max"] = "[PY3 TEST]" #TODO: remove me
+output["_updateDate_max"] = max(timetable.update_dates)
+#output["_updateDate_max"] = "[PREPROD]" #TODO: remove me
 output['teachers'] = collections.OrderedDict(sorted(timetable.teachers_timetable.items()))
 output['timetable'] = timetable.timetable
 output['units'] = timetable.units_list
@@ -84,7 +105,7 @@ tm = open("teachermap.json", "r")
 tm_j = json.loads(tm.read())
 tm.close()
 
-tm_j0 = {}
+tm_j0 = collections.OrderedDict()
 
 # [dluga nazwa] = krotka
 for k, v in tm_j.items():
@@ -94,7 +115,7 @@ for k, v in tm_j.items():
 #posortuj po dlugiej nazwie
 tm_j = collections.OrderedDict(sorted(tm_j0.items()))
 
-tm_j2 = dict()
+tm_j2 = collections.OrderedDict()
 
 # [krotka nazwa] = dluga
 for k, v in tm_j.items():
@@ -103,29 +124,44 @@ for k, v in tm_j.items():
 output['teachermap'] = tm_j2
 
 ts = open("timesteps.json", "r")
-ts_j = json.loads(ts.read())
+ts_j = collections.OrderedDict(json.loads(ts.read()))
 ts.close()
 output['timesteps'] = ts_j
 
 #Hash current timetable before adding timestamp and overrides
-output['hash'] = utils.hash_output(output)
-
-output['overrideData'] = {}#TODO: zastepstwa
+output['hash'] = utils.hash_output(json.dumps(output))
+print(output['hash'])
+output['overrideData'] = overrides_parser.generate()
 
 
 output['comment'] = "Wyeksportowano "+datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-b = open("data.json", "w")
+output['_fetch_time'] = datetime.now().strftime("%H:%M")
+
+
+
+with open("data.json", "r", encoding="UTF-8") as f:
+	temp_data = json.load(f)
+	if temp_data['hash'] != output['hash']:
+		print("To jest nowy plan!")
+
+
+b = open("data.json", "w", encoding="UTF-8")
 b.write(json.dumps(output))
 b.close()
 
-print("[*] JSON zapisany do data.json")
-#TODO: upload ftp
+if output['hash'] != utils.hash_output(json.dumps(output)):
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	print("!!!! HASHE PLIKU SIĘ NIE ZGADZAJĄ !!!!")
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-if config.ftp_upload:
-	ftp = ftplib.FTP(config.ftp_host)
-	ftp.login(user = config.ftp_user, passwd = config.ftp_password)
-	ftp.cwd('/')
+print("[*] JSON zapisany do data.json")
+if target['ftp_enable']:
+	print("[*] Starting FTP Upload to {}".format(target['hostname']))
+	ftp = ftplib.FTP(target['hostname'])
+	ftp.login(user = target['ftp_user'], passwd = target['ftp_pass'])
+	ftp.cwd(target['ftp_rootdir_app'])
 	ftp.storbinary('STOR data.json', open("data.json", 'rb'))
+	print("[*] Uploaded data.json")
 
 if config.overrides_archiver or config.timetable_archiver:
 	if not os.path.exists("archive"):
@@ -134,8 +170,34 @@ if config.overrides_archiver or config.timetable_archiver:
 
 if config.timetable_archiver:
 	archive_filename = datetime.now().strftime("%Y-%m-%d") + "-" + output['hash'] + ".json"
-	with open(os.path.join("archive", "overrides", archive_filename), "w") as f:
+
+	with open(os.path.join("archive", "timetables", archive_filename), "w") as f:
 		f.write(json.dumps(output))
 	
-	ftp.cwd('/archive/timetables')
-	ftp.storbinary('STOR '+archive_filename, open(os.path.join("archive", "overrides", archive_filename), 'rb'))
+	indexer.add_first_known(output)
+	indexer.start_indexer()
+	
+	if target['ftp_enable']:
+		ftp.cwd("/")
+		ftp.cwd(target['ftp_rootdir_app'])
+
+		try:
+			ftp.cwd("data")
+		except:
+			ftp.mkd("data")
+
+		remotef = ftp.nlst()
+		
+		for root, dirs, files in os.walk(os.path.join("archive", "timetables"), topdown=True):
+			for name in files:
+				if name not in remotef or name == "index.json":
+					path = os.path.join("archive", "timetables", name)
+
+					try:
+						ftp.storbinary('STOR '+name, open(path, 'rb'))
+						print("[*] Uploaded {}".format(path))
+					except:
+						print("[*] Uploaded {}".format(path))
+		
+		#ftp.cwd('/archive/timetables')
+		#ftp.storbinary('STOR '+archive_filename, open(os.path.join("archive", "timetables", archive_filename), 'rb'))
