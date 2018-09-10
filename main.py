@@ -22,7 +22,13 @@ import os
 import ftplib
 import argparse
 import indexer 
-import notifications
+
+try:
+	import notifications
+	print("notification import ok!")
+except:
+	print("notification import fail!")
+
 timetable = None
 
 print("[*] Wczytywanie konfiguracji")
