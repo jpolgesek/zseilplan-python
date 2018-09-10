@@ -1,6 +1,8 @@
 #coding: utf-8
 import requests
 import AdvancedHTMLParser
+import collections
+from unidecode import unidecode
 
 def pprint(txt="",e="\n"):
 	if False:
@@ -12,11 +14,11 @@ class www_parser:
 		self.http.encoding = "UTF-8"
 		self.base_url = base_url
 		self.classrooms = []
-		self.units = {}
+		self.units = collections.OrderedDict()
 		self.units_list = []
 		self.update_dates = []
-		self.timetable = {}
-		self.teachers_timetable = {}
+		self.timetable = collections.OrderedDict()
+		self.teachers_timetable = collections.OrderedDict()
 
 		return None
 	
@@ -30,9 +32,9 @@ class www_parser:
 	def get_teacher(self, parser_object):
 		#workaroud for timetables, where are duplicate entries for subject, but there are none for teacher
 		if len(self.find_by_class(parser_object.getElementsByTagName("span"),"p")) > 1:
-			return self.find_by_class(parser_object.getElementsByTagName("span"),"p")[1].innerText.upper()
+			return unidecode(self.find_by_class(parser_object.getElementsByTagName("span"),"p")[1].innerText.upper())
 		else:
-			return self.find_by_class(parser_object.getElementsByTagName("span"),"n")[0].innerText.upper()
+			return unidecode(self.find_by_class(parser_object.getElementsByTagName("span"),"n")[0].innerText.upper())
 
 	def get_subject(self, parser_object):
 		return self.find_by_class(parser_object.getElementsByTagName("span"),"p")[0].innerText
@@ -69,6 +71,7 @@ class www_parser:
 		'''Returns list of units, that are described in currently set timetable url'''
 
 		resp = self.http.get("{}/lista.html".format(self.base_url))
+		resp.encoding = "UTF-8"
 		if resp.status_code != 200:
 			print("[E] Serwer zwrócił kod błędu {} przy próbie pobrania listy klas".format(resp.status_code))
 			exit(-1)
@@ -85,6 +88,7 @@ class www_parser:
 		unit_id = self.units[unit_name]
 		
 		resp = self.http.get("{}/plany/o{}.html".format(self.base_url, unit_id))
+		resp.encoding = "UTF-8"
 		if resp.status_code != 200:
 			print("[E] Serwer zwrócił kod błędu {} przy próbie pobrania planu klasy {} (id {})".format(resp.status_code, unit_name, unit_id))
 			exit(-1)
@@ -100,7 +104,8 @@ class www_parser:
 		rows = parser.getAllNodes().getElementsByClassName("tabela")[0].getChildren()
 
 		for i,row in enumerate(rows):
-			day = 1 #count from 1, because backwards compatibility
+			day = 0 #count from 0, because WTF
+			#day = 1 #count from 1, because backwards compatibility
 			columns = row.getElementsByClassName("l")
 			for column in columns:
 				day += 1
@@ -141,7 +146,7 @@ class www_parser:
 						subject["n"] = self.get_teacher(entry)
 						subject["s"] = self.get_classroom(entry)
 						subject["g"] = self.get_group(subject["p"])
-
+						
 						pprint("[D] - Przedmiot: {}".format(subject["p"]))
 						pprint("[D] - Nauczyciel: {}".format(subject["n"]))
 						pprint("[D] - Sala: {}".format(subject["s"]))
