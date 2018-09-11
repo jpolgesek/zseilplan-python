@@ -8,6 +8,14 @@ import datetime
 import ftplib
 from collections import OrderedDict
 
+
+if __name__ == "__main__":
+	print("This program should not be called directly")
+	exit()
+	# send_to_all(title="Super promocja!", message="Teraz w pizzy hut duża pizza tylko 29,99. A przy okazji testuję cross-origin i nowy silnik powiadomień")
+	#send_to_all(title="Super Clever Plan - Nowy Plan")
+
+
 target = {}
 
 ARCHIVE_DIR = "archive"
@@ -83,21 +91,16 @@ def send_to(recipient, title="Super Clever Plan", message="", url="https://dev.p
 
 
 def send_to_all(title="Super Clever Plan", message="", url="https://dev.polgesek.pl/zseilplan/", icon="assets/img/launcher-icon-4x.png"):
-	message = "Już jest! Nowy, lepszy plan. Nie było już przecież zmiany od {}".format(difference_string)
+	if message == "":
+		message = "Już jest! Nowy, lepszy plan. Nie było już przecież zmiany od {}".format(difference_string)
 
 	for k in subs:
 		send_to(subs[k], title=title, message=message, url=url, icon=icon)
 	return True
 
 
-if __name__ == "__main__":
-	print("This should not be called directly")
-	# send_to_all(title="Super promocja!", message="Teraz w pizzy hut duża pizza tylko 29,99. A przy okazji testuję cross-origin i nowy silnik powiadomień")
-	send_to_all(title="Super Clever Plan - Nowy Plan")
 
-
-
-def start():
+def start(message = None):
 	global subs
 
 	print("Get subscriptions list")
@@ -114,7 +117,10 @@ def start():
 	
 	print("Ilość subskrybcji: {}".format(len(subs)))
 
-	send_to_all()
+	if message == None:
+		message = "Już jest! Nowy, lepszy plan. Nie było już przecież zmiany od {}".format(difference_string)
+
+	send_to_all(message=message)
 	
 	print("Update subscriptions list [todo]")
 	'''
