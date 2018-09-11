@@ -36,6 +36,7 @@ import config
 
 parser = argparse.ArgumentParser()
 parser.add_argument("target")
+parser.add_argument("--notificationtest", help="Send test notification to all", action="store_true")
 args = parser.parse_args()
 
 if args.target not in config.targets:
@@ -155,7 +156,16 @@ output['_fetch_time'] = datetime.now().strftime("%H:%M")
 
 with open("data.json", "r", encoding="UTF-8") as f:
 	temp_data = json.load(f)
-	if temp_data['hash'] != output['hash']:
+	if args.notificationtest:
+		print("To jest test powiadomien, wywoluje notifications.start()!")
+		try:
+			notifications.target = target
+			notifications.start(message="main.py --notificationtest 🤔")
+		except:
+			print("something in notifications failed, check me!")
+			pass
+
+	elif temp_data['hash'] != output['hash']:
 		print("To jest nowy plan, wywoluje notifications.start()!")
 		try:
 			notifications.target = target
