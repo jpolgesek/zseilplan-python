@@ -108,6 +108,7 @@ output['timetable'] = timetable.timetable
 output['units'] = timetable.units_list
 output['classrooms'] = sorted(timetable.classrooms)
 
+
 tm = open("teachermap.json", "r")
 tm_j = json.loads(tm.read())
 tm.close()
@@ -129,6 +130,12 @@ for k, v in tm_j.items():
 	tm_j2[v] = k
 
 output['teachermap'] = tm_j2
+
+
+for t in output['teachers']:
+	if t not in output['teachermap']:
+		output['teachermap'][t] = "{} (brak danych)".format(t)
+		print("Brakuje mi nauczyciela {} w teachermap. Sprawdz to.".format(t))
 
 ts = open("timesteps.json", "r")
 ts_j = collections.OrderedDict(json.loads(ts.read()))
