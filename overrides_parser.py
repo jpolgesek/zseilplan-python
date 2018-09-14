@@ -7,6 +7,7 @@ import requests
 import AdvancedHTMLParser
 import json
 import datetime
+import html
 from unidecode import unidecode
 
 print("SEMI-LEGACY OVERRIDES PARSER!!!!!!!!!")
@@ -158,6 +159,7 @@ def parse_table(o, table, html_all=None, date_fallback=None):
 
 
 def find_teacher_shortcut(name):
+	name = unidecode(html.unescape(name))
 	tm_f = open("teachermap.json", "r")
 	teachermap = json.loads(tm_f.read())
 	for key in teachermap:
