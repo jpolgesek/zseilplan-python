@@ -106,7 +106,7 @@ output["_Copyright"] = "2018, Jakub Polgesek"
 
 output["_updateDate_min"] = min(timetable_parser.update_dates)
 output["_updateDate_max"] = max(timetable_parser.update_dates)
-output["_updateDate_max"] = "[objectified branch]" #TODO: remove me
+#output["_updateDate_max"] = "[objectified branch]" #TODO: remove me
 
 output['teachers'] = timetable_parser.teachers
 output['timetable'] = timetable_parser.timetable
