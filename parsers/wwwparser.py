@@ -5,6 +5,7 @@ import collections
 from unidecode import unidecode
 import utils
 import json
+import re
 
 def pprint(txt="",e="\n"):
 	if False:
@@ -101,6 +102,9 @@ class www_parser:
 			pseudo_teacher = unidecode(self.find_by_class(parser_object.getElementsByTagName("span"),"p")[1].innerText.upper())
 			if pseudo_teacher in self.teacher_recovery:
 				return self.teacher_recovery[pseudo_teacher]
+			else:
+				print("Nie znalazlem recovery dla {}".format(pseudo_teacher))
+				return pseudo_teacher
 		else:
 			pseudo_teacher = unidecode(self.find_by_class(parser_object.getElementsByTagName("span"),"n")[0].innerText.upper())
 			if pseudo_teacher in self.teacher_recovery:
@@ -116,6 +120,22 @@ class www_parser:
 	def get_group(self, subject):
 		if len(subject.split("-")) > 1:
 			return subject.split("-")[1]
+		else:
+			return '-1'
+	
+	def get_group2(self, parser_object):
+		a = self.find_by_class(parser_object.getElementsByTagName("span"),"p")[0].innerText
+		b = self.find_by_class(parser_object.getElementsByTagName("span"),"p")[0].parentElement.innerHTML
+		
+		b = re.sub(r"<[^>]*>", "", b).split(" ")[0]
+
+		a = a.strip()
+		b = b.strip()
+
+		if len(a.split("-")) > 1:
+			return a.split("-")[1]
+		elif len(b.split("-")) > 1:
+			return b.split("-")[1]
 		else:
 			return '-1'
 
@@ -231,7 +251,8 @@ class www_parser:
 						subject["p"] = self.get_subject(entry)
 						subject["n"] = self.get_teacher(entry)
 						subject["s"] = self.get_classroom(entry)
-						subject["g"] = self.get_group(subject["p"])
+						subject["g"] = self.get_group2(entry)
+						#subject["g"] = self.get_group(subject["p"])
 						
 						utils.debug("- Przedmiot: {}".format(subject["p"]))
 						utils.debug("- Nauczyciel: {}".format(subject["n"]))
@@ -258,7 +279,8 @@ class www_parser:
 									subject["n"] = self.teacher_recovery[subject["n"]]
 
 								subject["s"] = parent.getElementsByClassName("s")[0].innerText
-								subject["g"] = self.get_group(subject["p"])
+								#subject["g"] = self.get_group(subject["p"])
+								subject["g"] = self.get_group2(parent)
 
 								utils.debug("Znaleziono:")
 								utils.debug("- Przedmiot: {}".format(subject["p"]))
