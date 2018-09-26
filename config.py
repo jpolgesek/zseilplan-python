@@ -6,7 +6,7 @@ debug_type = 1
 class ConfigFile:
 	def __init__(self):
 		self.timetable_url = "http://www.zseil.edu.pl/rnowa/html/"
-		self.timetable_engine = "vulcan"
+		self.timetable_engine = "www"
 
 		self.overrides_url = ""
 		self.overrides_engine = "www"
