@@ -167,7 +167,7 @@ def find_teacher_shortcut(name):
 			tm_f.close()
 			return key
 	tm_f.close()
-	return -1
+	return "-1"
 
 
 def generate():
