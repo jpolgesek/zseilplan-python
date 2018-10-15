@@ -109,6 +109,10 @@ output["_updateDate_max"] = max(timetable_parser.update_dates)
 #output["_updateDate_max"] = "[objectified branch]" #TODO: remove me
 
 output['teachers'] = timetable_parser.teachers
+try:
+	output['teachers_new'] = timetable_parser.new_teachers
+except:
+	pass
 output['timetable'] = timetable_parser.timetable
 output['units'] = timetable_parser.units
 output['classrooms'] = sorted(timetable_parser.classrooms)

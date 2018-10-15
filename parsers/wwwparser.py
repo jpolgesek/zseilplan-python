@@ -25,6 +25,7 @@ class www_parser:
 		self.update_dates = []
 		self.timetable = collections.OrderedDict()
 		self.teachers_timetable = collections.OrderedDict()
+		self.new_teachers_timetable = collections.OrderedDict()
 
 		try:
 			with open("teacher_recovery.json", "r") as f:
@@ -158,6 +159,25 @@ class www_parser:
 				
 		return
 
+	def add_to_new_teacher_plan(self, p, n, s, unit_name, day, hour):
+		if n not in self.new_teachers_timetable:
+		 	self.new_teachers_timetable[n] = dict()
+			
+		if day not in self.new_teachers_timetable[n]:
+			self.new_teachers_timetable[n][day] = dict()
+		
+		if hour not in self.new_teachers_timetable[n][day]:
+			self.new_teachers_timetable[n][day][hour] = []
+		
+		self.new_teachers_timetable[n][day][hour].append({
+			"p":p,
+			"n":n.upper(),
+			"s":s, 
+			"k":unit_name
+		})
+				
+		return
+
 	def get_units_list(self):
 		'''Returns list of units, that are described in currently set timetable url'''
 
@@ -264,6 +284,10 @@ class www_parser:
 						
 						self.timetable[day][hour][unit_name].append(subject)
 						self.add_to_teacher_plan(subject["p"], subject["n"], subject["s"], unit_name, day, hour)
+						try:
+							self.add_to_new_teacher_plan(subject["p"], subject["n"], subject["s"], unit_name, day, hour)
+						except:
+							pass
 					else:
 						utils.debug("Nie znaleziono kontenera, szukam ręcznie")
 
@@ -292,6 +316,10 @@ class www_parser:
 									self.classrooms.append(subject["s"])
 								self.timetable[day][hour][unit_name].append(subject)
 								self.add_to_teacher_plan(subject["p"], subject["n"], subject["s"], unit_name, day, hour)
+								try:
+									self.add_to_new_teacher_plan(subject["p"], subject["n"], subject["s"], unit_name, day, hour)
+								except:
+									pass
 		
 		return True
 
@@ -304,5 +332,6 @@ class www_parser:
 		self.units = sorted(units)
 
 		self.teachers = collections.OrderedDict(sorted(self.teachers_timetable.items()))
+		self.new_teachers = self.new_teachers_timetable
 		
 		return True
