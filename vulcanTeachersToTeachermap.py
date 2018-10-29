@@ -3,7 +3,10 @@ import json
 import unidecode
 
 
-inputFile = open("tm_src.json","r", encoding="UTF-8")
+with open("teachermap.json", "r", encoding="UTF-8") as f:
+	currentJson = json.load(f)
+
+inputFile = open("vulcan_2910.json","r", encoding="UTF-8")
 inputJson = json.loads(inputFile.read())["data"]
 inputFile.close()
 
@@ -18,12 +21,21 @@ for teacher in inputJson:
 		short = short.strip()[:-1].lower()
 		if short != "01": #Vulcan
 			#output[short] = [full, "imported.html"]
-			output[short.upper()] = full
+			if short.upper() not in currentJson:
+				print("Dodaje nowego nauczyciela {}".format(full))
+				output[short.upper()] = full
+			elif currentJson[short.upper()] != full:
+				print("KONFLIKT: ")
+				print("Poprzednio: {} {}".format(short.upper(), currentJson[short.upper()]))
+				print("Teraz: {} {}".format(short.upper(), full))
+				if input("t/n? ").lower() == "t":
+					output[short.upper()] = full
+			else:
+				output[short.upper()] = full
 	else:
 		print("Niewspierany format, IdLogin={}".format(teacher["IdLogin"]))
 
 
-outputFile = open("teachermap.json","w")
-outputFile.write(json.dumps(output))
-outputFile.close()
+with open("teachermap.json", "w", encoding="UTF-8") as f:
+	f.write(json.dumps(output))
 print("Done.")
