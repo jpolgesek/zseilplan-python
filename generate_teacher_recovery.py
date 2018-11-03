@@ -15,6 +15,8 @@ with open(args.vulcan, "r") as f:
 
 teacher_recovery_mapping = {}
 
+week_days = ["UNKNOWN", "Poniedzialek", "Wtorek", "Sroda", "Czwartek", "Piatek"]
+
 for day in timetable_www['timetable']:
     for hour in timetable_www['timetable'][day]:
         for unit in timetable_www['timetable'][day][hour]:
@@ -31,9 +33,14 @@ for day in timetable_www['timetable']:
                         if unit not in timetable_vulcan['units']:
                             print("Nie ma klasy {} w danych z vulcana".format(unit))
                             continue
-                        elif unit not in timetable_vulcan['timetable'][day][hour]:
-                            print("Klasa {} nie ma odpowiadającej lekcji w danych z vulcana (D={}, H={})".format(unit, day, hour))
-                            continue
+                        else:
+                            if day not in timetable_vulcan['timetable']:
+                                print("Nie ma dnia {} w danych źródłowych?\n PRZERWANIE PROGRAMU MOŻE BYĆ DOBRĄ OPCJĄ!".format(day))
+                                continue
+                            if unit not in timetable_vulcan['timetable'][day][hour]:
+                                #print("{};{};{};{};{}".format(unit, week_days[int(day)], hour, lesson["p"], lesson["s"]))
+                                print("Klasa {} nie ma odpowiadającej lekcji w danych z vulcana (D={}, H={})".format(unit, day, hour))
+                                continue
                        
                         try:
                             for vlesson in timetable_vulcan['timetable'][day][hour][unit]:
