@@ -104,11 +104,41 @@ targets["dev.polgesek.pl"] = {
 
 targets["plan.zseil.pl"] = {
 	"dev": False,
-	"http_rootdir": "/",
+	"http_rootdir_app": "/",
+	"http_rootdir_manifest": "/",
 	"hostname": "plan.zseil.pl",
-	"ftp_user": "",
-	"ftp_pass": "",
-	"ftp_rootdir_manifest": "/",
-	"ftp_rootdir_app": "/",
-	"ftp_enable": True
+	"upload": True,
+	"uploader": "scp",
+	"scp": {
+		"user": "zseilplan",
+		"pass": "***REMOVED***",
+		"rootdir_manifest": "/var/www/zseil/plan/",
+		"rootdir_app": "/var/www/zseil/plan/"
+	}
+}
+
+targets["localtest"] = {
+	"dev": True,
+	"http_rootdir_app": "/",
+	"http_rootdir_manifest": "/",
+	"hostname": "localhost",
+	"upload": True,
+	"uploader": "local",
+	"local": {
+		"rootdir_manifest": "C:\\xampp\\htdocs\\lap-htdocs\\zseilplan_localtest\\",
+		"rootdir_app": "C:\\xampp\\htdocs\\lap-htdocs\\zseilplan_localtest\\"
+	},
+}
+
+targets["localprod"] = {
+	"dev": False,
+	"http_rootdir_app": "/",
+	"http_rootdir_manifest": "/",
+	"hostname": "localhost",
+	"upload": True,
+	"uploader": "local",
+	"local": {
+		"rootdir_manifest": "C:\\xampp\\htdocs\\lap-htdocs\\zseilplan_localprod\\",
+		"rootdir_app": "C:\\xampp\\htdocs\\lap-htdocs\\zseilplan_localprod\\"
+	},
 }
