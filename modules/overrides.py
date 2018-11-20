@@ -1,8 +1,4 @@
-##coding: utf-8
-#import requests
-#import AdvancedHTMLParser
-# coding: utf-8
-
+#coding: utf-8
 import requests
 import AdvancedHTMLParser
 import json
@@ -10,12 +6,20 @@ import datetime
 import html
 from unidecode import unidecode
 
+# Placeholder, will be replaced by reference to main cfg object
+# This is only to satisfy builtin vs code verifier
+try:
+	cfg = None
+	cfg.teachermap_filename = None
+except:
+	pass
+
 print("SEMI-LEGACY OVERRIDES PARSER!!!!!!!!!")
 
 def search_for_overrides():
 	r = requests.get("http://www.zseil.edu.pl/zastepstwa/")
 	if r.status_code != 200:
-		exit(r.status_code)
+		return False
 	listparser = AdvancedHTMLParser.AdvancedHTMLParser()
 	listparser.parseStr(r.text)
 	totalOutput = {}
@@ -160,7 +164,7 @@ def parse_table(o, table, html_all=None, date_fallback=None):
 
 def find_teacher_shortcut(name):
 	name = unidecode(html.unescape(name))
-	tm_f = open("teachermap.json", "r")
+	tm_f = open(cfg.teachermap_filename, "r")
 	teachermap = json.loads(tm_f.read())
 	for key in teachermap:
 		if teachermap[key].lower().find(name.lower()) != -1:

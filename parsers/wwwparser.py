@@ -3,7 +3,7 @@ import requests
 from AdvancedHTMLParser import AdvancedHTMLParser
 import collections
 from unidecode import unidecode
-import utils
+import modules.utils
 import json
 import re
 
@@ -16,7 +16,7 @@ www_parser - module for parsing timetable from vulcan.
 """
 
 class www_parser:
-	def __init__(self):
+	def __init__(self, teacher_recovery_filename = None):
 		self.http = requests.Session()
 		self.http.encoding = "UTF-8"
 		self.base_url = None
@@ -26,14 +26,18 @@ class www_parser:
 		self.timetable = collections.OrderedDict()
 		self.teachers_timetable = collections.OrderedDict()
 		self.new_teachers_timetable = collections.OrderedDict()
+		self.teacher_recovery = {}
 
+		return None
+	
+	def load_teacher_recovery(self, filename):
 		try:
-			with open("teacher_recovery.json", "r") as f:
+			with open(filename, "r") as f:
 				self.teacher_recovery = json.load(f)
 		except:
 			pass
+		return
 
-		return None
 	
 	def import_teachers(self):
 		#print("TODO!")
@@ -192,7 +196,7 @@ class www_parser:
 		units = parser.getAllNodes().getElementsByTagName("a")
 		for unit in self.units:
 			self.units[unit.innerText.upper()] = unit.href[7:-5]
-			self.units_list.append(unit.innerText.upper())
+			#self.units_list.append(unit.innerText.upper())
 		return self.units
 	
 	def import_timetable(self):
@@ -202,12 +206,12 @@ class www_parser:
 			if not self.import_timetable_for_unit(unit):
 				return False
 			else:
-				utils.step("Przetwarzam plan lekcji klasy {}".format(unit), state=" OK ")
+				modules.utils.step("Przetwarzam plan lekcji klasy {}".format(unit), state=" OK ")
 		
 		return True
 	
 	def import_timetable_for_unit(self, unit_name):
-		utils.step("Przetwarzam plan lekcji klasy {}".format(unit_name))
+		modules.utils.step("Przetwarzam plan lekcji klasy {}".format(unit_name))
 		unit_url = self.units[unit_name]
 		
 		resp = self.http.get("{}/{}".format(self.base_url, unit_url))
@@ -239,7 +243,7 @@ class www_parser:
 				if column.innerText == "&nbsp;":
 					continue
 
-				utils.debug("Dzien {} - {} godzina lekcyjna".format(day, hour), level=2)
+				modules.utils.debug("Dzien {} - {} godzina lekcyjna".format(day, hour), level=2)
 				
 				'''TODO: make this a func'''
 
@@ -265,7 +269,7 @@ class www_parser:
 					entry.parseStr(e)
 					
 					if entry.getElementsByTagName("span")[0].className == "p":
-						utils.debug("Znaleziono kontener z pojedynczym przedmiotem")
+						modules.utils.debug("Znaleziono kontener z pojedynczym przedmiotem")
 
 						subject = dict()
 						subject["p"] = self.get_subject(entry)
@@ -274,10 +278,10 @@ class www_parser:
 						subject["g"] = self.get_group2(entry)
 						#subject["g"] = self.get_group(subject["p"])
 						
-						utils.debug("- Przedmiot: {}".format(subject["p"]))
-						utils.debug("- Nauczyciel: {}".format(subject["n"]))
-						utils.debug("- Sala: {}".format(subject["s"]))
-						utils.debug("- Grupa: {}".format(subject["g"]))
+						modules.utils.debug("- Przedmiot: {}".format(subject["p"]))
+						modules.utils.debug("- Nauczyciel: {}".format(subject["n"]))
+						modules.utils.debug("- Sala: {}".format(subject["s"]))
+						modules.utils.debug("- Grupa: {}".format(subject["g"]))
 
 						if subject["s"] not in self.classrooms:
 							self.classrooms.append(subject["s"])
@@ -289,7 +293,7 @@ class www_parser:
 						except:
 							pass
 					else:
-						utils.debug("Nie znaleziono kontenera, szukam ręcznie")
+						modules.utils.debug("Nie znaleziono kontenera, szukam ręcznie")
 
 						parents = entry.getElementsByTagName("span")
 						for parent in parents:
@@ -306,11 +310,11 @@ class www_parser:
 								#subject["g"] = self.get_group(subject["p"])
 								subject["g"] = self.get_group2(parent)
 
-								utils.debug("Znaleziono:")
-								utils.debug("- Przedmiot: {}".format(subject["p"]))
-								utils.debug("- Nauczyciel: {}".format(subject["n"]))
-								utils.debug("- Sala: {}".format(subject["s"]))
-								utils.debug("- Grupa: {}".format(subject["g"]))
+								modules.utils.debug("Znaleziono:")
+								modules.utils.debug("- Przedmiot: {}".format(subject["p"]))
+								modules.utils.debug("- Nauczyciel: {}".format(subject["n"]))
+								modules.utils.debug("- Sala: {}".format(subject["s"]))
+								modules.utils.debug("- Grupa: {}".format(subject["g"]))
 
 								if subject["s"] not in self.classrooms:
 									self.classrooms.append(subject["s"])

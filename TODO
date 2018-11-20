@@ -1,0 +1,37 @@
+[New workflow]
+
+if main parser is wwwparser:
+	if user vulcan creds are available:
+		vulcan teachers to teachermap
+
+	if teacher vulcan creds are available:
+		download timetable from vulcan
+		parse it
+		create teacher recovery
+
+	parse data from www
+
+	if teacher vulcan creds are available:
+		download overrides data from vulcan
+	else:
+		download overrides data from www
+	
+	parse overrides
+
+
+elif main parser is vulcanparser:
+	if --localfile is set:
+		data = localfile
+	elif teacher vulcan creds are available:
+		data = download timetable from vulcan
+	else:
+		die()
+	
+	parse it
+
+	download overrides data from vulcan
+	
+	parse overrides
+
+
+upload

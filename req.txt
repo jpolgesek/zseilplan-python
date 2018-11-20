@@ -1,6 +1,6 @@
-#For main parser
 requests
 AdvancedHTMLParser
 unidecode
-#For web notifications
 pywebpush
+ftplib
+pysftp

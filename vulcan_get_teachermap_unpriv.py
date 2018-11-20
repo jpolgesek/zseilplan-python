@@ -2,6 +2,7 @@
 import json
 import unidecode
 
+# TODO: Move me to VulcanAPI
 
 with open("teachermap.json", "r", encoding="UTF-8") as f:
 	currentJson = json.load(f)

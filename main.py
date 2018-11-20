@@ -1,103 +1,86 @@
-#coding: utf-8
-import sys
-import time
-import utils
+#coding: UTF-8
+import modules.utils
+modules.utils.check_python_version()
 
-#sprawdz czy to python 3
-if sys.version_info < (3, 0):
-	print("Program wymaga pythona 3.x. Sorry :/")
-	sys.exit(1)
 
-if sys.version_info < (3, 7):
-	print("Program preferuje pythona 3.7, ale pozwoli się uruchomić na pythonie 3.x")
-	print("UWAGA! utils.hash może nie działać poprawnie.")
 
-utils.step("Ładowanie programu")
-
-import collections
-from datetime import datetime
-import json
-import os
-import ftplib
 import argparse
-import indexer 
-utils.step("Ładowanie programu", state="FAIL")
-
-import config
-
-import notifications
-
-utils.step("Wczytywanie konfiguracji")
 parser = argparse.ArgumentParser()
 parser.add_argument("target")
 parser.add_argument("--timetable-engine", help="Timetable parser engine (www/vulcan)")
-parser.add_argument("--notificationtest", help="Send test notification to all", action="store_true")
+parser.add_argument("--vulcan-timetable", help="Vulcan timetable file")
+parser.add_argument("--force-notification", help="Force send notification to all", action="store_true")
 args = parser.parse_args()
 
-cfg = config.ConfigFile()
-if args.timetable_engine != None:
-	cfg.timetable_engine = args.timetable_engine
+modules.utils.step("Loading program")
+import os
+import json
+import collections
+from datetime import datetime
+import argparse
+modules.utils.step("Loading program", state=" OK ")
+
+
+
+modules.utils.step("Loading configuration")
+from config import config
+cfg = config.Config()
 
 if not cfg.load_target(args.target):
-	utils.step("Wczytywanie konfiguracji", state="FAIL")
-	print("[FAIL] Niewłaściwy target: {}".format(args.target))
-	print("[FAIL] Właściwe: {}".format(', '.join(config.targets)))
-	exit()
+	modules.utils.step("Loading configuration", state="FAIL")
+	print("[FAIL] No such target: {}".format(args.target))
+	print("[FAIL] Available Targets: {}".format(', '.join(config.targets)))
+	exit(1)
 else:
-	utils.step("Wczytywanie konfiguracji", state=" OK ")
-	
-cfg.print()
+	modules.utils.step("Loading configuration", state=" OK ")
+	cfg.print()
+
 
 # Create parser object
 if cfg.timetable_engine == "www":
 	from parsers import wwwparser
 	timetable_parser = wwwparser.www_parser()
+	if cfg.teacher_recovery_filename != None:
+		timetable_parser.load_teacher_recovery(cfg.teacher_recovery_filename)
 	timetable_parser.base_url = cfg.timetable_url
 elif cfg.timetable_engine == "vulcan":
 	from parsers import vulcanparser
 	timetable_parser = vulcanparser.vulcan_parser()
-	#TODO: change me plz
-	with open("vulcan_1309.json", "r", encoding="utf-8") as f:
-		timetable_parser.load_data_from_text(f.read())
 else:
-	print("No such engine '{}'".format(cfg.timetable_engine))
-	exit()
+	print("No such timetable engine: {}".format(cfg.timetable_engine))
+	exit(1)
 
-import overrides_parser
 
 step_list = [
-	{'desc':'Wczytuję oddziały', 				'fn':'import_units',		'engines':['www', 'vulcan']},
-	{'desc':'Wczytuję zakres godzin', 			'fn':'import_timesteps',	'engines':['www', 'vulcan']},
-	{'desc':'Wczytuję przedmioty',				'fn':'import_subjects',		'engines':['vulcan']},
-	{'desc':'Wczytuję sale', 					'fn':'import_classrooms',	'engines':['vulcan']},
-	{'desc':'Wczytuję nauczycieli', 			'fn':'import_teachers',		'engines':['www', 'vulcan']},
-	{'desc':'Wczytuję grupy', 					'fn':'import_groups',		'engines':['vulcan']},
-	{'desc':'Wczytuję plan lekcji', 			'fn':'import_timetable',	'engines':['www', 'vulcan']},
-	{'desc':'Przygotowywuję dane do eksportu', 	'fn':'generate',			'engines':['www', 'vulcan']},
+	{'desc':'Przetwarzam klasy', 					'fn':'import_units',		'engines':['www', 'vulcan']},
+	{'desc':'Przetwarzam zakresy godzin', 			'fn':'import_timesteps',	'engines':['www', 'vulcan']},
+	{'desc':'Przetwarzam przedmioty',				'fn':'import_subjects',		'engines':['vulcan']},
+	{'desc':'Przetwarzam sale', 					'fn':'import_classrooms',	'engines':['vulcan']},
+	{'desc':'Przetwarzam nauczycieli', 				'fn':'import_teachers',		'engines':['www', 'vulcan']},
+	{'desc':'Przetwarzam grupy', 					'fn':'import_groups',		'engines':['vulcan']},
+	{'desc':'Przetwarzam plan lekcji', 				'fn':'import_timetable',	'engines':['www', 'vulcan']},
+	{'desc':'Przygotowuję eksport danych', 			'fn':'generate',			'engines':['www', 'vulcan']},
 ]
+
 
 for step in step_list:
 	if cfg.timetable_engine not in step["engines"]:
-		# This step does not apply to this engine
 		continue
 	
 	desc = "{} ({}) ".format(step["desc"], step["fn"])
-	utils.step(desc)
+	modules.utils.step(desc)
 
 	result = getattr(timetable_parser, step['fn'])()
 
 	if result:
-		utils.step(desc, " OK ")
+		modules.utils.step(desc, " OK ")
 	else:
-		utils.step(desc, "FAIL")
+		modules.utils.step(desc, "FAIL")
 		exit(1)
+	
 
 
-#TODO: zbierz zastepstwa
-import overrides_parser
-
-desc = "Eksportuję dane jako JSON w formacie zseilplanu 2.0"
-utils.step(desc)
+modules.utils.step("Eksportuję dane jako JSON w formacie zseilplanu 2.0")
 
 output = collections.OrderedDict()
 
@@ -106,7 +89,6 @@ output["_Copyright"] = "2018, Jakub Polgesek"
 
 output["_updateDate_min"] = min(timetable_parser.update_dates)
 output["_updateDate_max"] = max(timetable_parser.update_dates)
-#output["_updateDate_max"] = "[objectified branch]" #TODO: remove me
 
 output['teachers'] = timetable_parser.teachers
 try:
@@ -114,20 +96,19 @@ try:
 except:
 	pass
 output['timetable'] = timetable_parser.timetable
-output['units'] = timetable_parser.units
+output['units'] = sorted(timetable_parser.units)
 output['classrooms'] = sorted(timetable_parser.classrooms)
 
 if cfg.timetable_engine == "www":
-	with open("teachermap.json", "r") as f:
+	with open(cfg.teachermap_filename, "r") as f:
 		tm_j = json.load(f)
 
-	'''OGARNAC TEN SYF!!!!!!!!!'''
+	'''TODO: OGARNAC TEN SYF!!!!!!!!!'''
 
 	tm_j0 = collections.OrderedDict()
 
 	# [dluga nazwa] = krotka
 	for k, v in tm_j.items():
-		# del tm_j[k]
 		tm_j0[v] = k
 
 	#posortuj po dlugiej nazwie
@@ -140,76 +121,91 @@ if cfg.timetable_engine == "www":
 		tm_j2[v] = k
 
 	output['teachermap'] = tm_j2
-		
 
 	for teacher in output['teachers']:
 		if teacher not in output['teachermap']:
 			output['teachermap'][teacher] = "{} (brak danych)".format(teacher)
-			print("Brakuje mi nauczyciela {} w teachermap. Sprawdz to!".format(teacher))
+			print("Brakuje mi nauczyciela {} w teachermap. Sprawdź to!".format(teacher))
 
 else:
 	output['teachermap'] = timetable_parser.teachermap
 
 
-with open("timesteps.json", "r") as f:
+with open(cfg.timesteps_filename, "r") as f:
 	output['timesteps'] = collections.OrderedDict(json.load(f))
 
 
 #Hash current timetable before adding timestamp and overrides
-output['hash'] = utils.hash_output(json.dumps(output))
-print("Hashed {}".format(output['hash']))
+import modules.hasher
+output['hash'] = modules.hasher.hash_output(json.dumps(output))
+print("Hashed: {}".format(output['hash']))
 
+import modules.overrides
+modules.overrides.cfg = cfg
+output['overrideData'] = modules.overrides.generate()
 
-output['overrideData'] = overrides_parser.generate()
+if output['overrideData'] == False:
+	print("FAIL - NIE UDAŁO SIĘ POBRAĆ ZASTĘPSTW!")
+	output['overrideData'] = {}
 
 output['comment'] = "Wyeksportowano "+datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 output['_fetch_time'] = datetime.now().strftime("%H:%M")
 
-'''
-with open("data.json", "r", encoding="UTF-8") as f:
-	temp_data = json.load(f)
-	if args.notificationtest:
-		print("To jest test powiadomien, wywoluje notifications.start()!")
-		try:
-			notifications.target = target
-			notifications.start(message="main.py --notificationtest 🤔")
-		except:
-			print("something in notifications failed, check me!")
-			pass
 
-	elif temp_data['hash'] != output['hash']:
-		print("To jest nowy plan, wywoluje notifications.start()!")
-		try:
-			notifications.target = target
-			notifications.start()
-		except:
-			print("something in notifications failed, check me!")
-			pass
-'''
-
-with open("data.json", "w", encoding="UTF-8") as f:
+if not os.path.exists(cfg.output_data_path):
+	os.makedirs(os.path.dirname(cfg.output_data_path), exist_ok=True)
+	
+with open(cfg.output_data_path, "w", encoding="UTF-8") as f:
 	f.write(json.dumps(output))
+	print("Zapisano jsona z danymi do {}".format(cfg.output_data_path))
 
-if output['hash'] != utils.hash_output(json.dumps(output)):
-	# Chyba uwzględnia to zastępstwa :/
-	# TODO: Sprawdzić
+if output['hash'] != modules.hasher.hash_output(json.dumps(output)):
 	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	print("!!!! HASHE PLIKU SIĘ NIE ZGADZAJĄ !!!!")
 	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-print("[*] JSON zapisany do data.json")
-if cfg.target['ftp_enable']:
-	print("[*] Starting FTP Upload to {}".format(cfg.target['hostname']))
-	ftp = ftplib.FTP(cfg.target['hostname'])
-	ftp.login(user = cfg.target['ftp_user'], passwd = cfg.target['ftp_pass'])
-	ftp.cwd(cfg.target['ftp_rootdir_app'])
-	ftp.storbinary('STOR data.json', open("data.json", 'rb'))
-	print("[*] Uploaded data.json")
+uploader = None
+
+if cfg.target["upload"]:
+	'''
+	if cfg.target["uploader"] == "ftp":
+		import modules.upload_ftp
+		uploader = modules.upload_ftp.Uploader(cfg.target["hostname"])
+		uploader.login(
+			cfg.target["ftp"]["user"], 
+			cfg.target["ftp"]["pass"]
+			)
+	elif cfg.target["uploader"] == "scp":
+		import modules.upload_scp
+		uploader = modules.upload_scp.Uploader(cfg.target["hostname"])
+		uploader.login(
+			cfg.target["scp"]["user"], 
+			cfg.target["scp"]["pass"]
+			)
+	elif cfg.target["uploader"] == "local":
+		import modules.upload_local
+		uploader = modules.upload_local.Uploader(cfg.target["hostname"])
+	else:
+		print("Moduł uploadu {} nie istnieje".format(cfg.target["uploader"]))
+		exit(1)
+	'''
+
+	uploader = cfg.uploader
+	
+	
+	#FIXME
+
+	uploader.connect()
+
+	uploader.chdir(cfg.target["rootdir_app"])
+	uploader.upload_file(cfg.output_data_path, "data.json")
+
 
 if cfg.overrides_archiver or cfg.timetable_archiver:
 	if not os.path.exists("archive"):
 		os.makedirs(os.path.join("archive", "overrides"))
 		os.makedirs(os.path.join("archive", "timetables"))
+
 
 if cfg.timetable_archiver:
 	archive_filename = datetime.now().strftime("%Y-%m-%d") + "-" + output['hash'] + ".json"
@@ -217,30 +213,31 @@ if cfg.timetable_archiver:
 	with open(os.path.join("archive", "timetables", archive_filename), "w") as f:
 		f.write(json.dumps(output))
 	
-	indexer.add_first_known(output)
-	indexer.start_indexer()
-	
-	if cfg.target['ftp_enable']:
-		ftp.cwd("/")
-		ftp.cwd(cfg.target['ftp_rootdir_app'])
+	import modules.indexer
+	modules.indexer.add_first_known(output)
+	modules.indexer.start_indexer()
 
-		try:
-			ftp.cwd("data")
-		except:
-			ftp.mkd("data")
+	if uploader != None:
+		
+		uploader.connect()
 
-		remotef = ftp.nlst()
+		uploader.chdir(cfg.target["rootdir_app"])
+		uploader.mkdir(os.path.join(cfg.target["rootdir_app"], "data"))
+		uploader.chdir(os.path.join(cfg.target["rootdir_app"], "data"))
+		
+		remotef = uploader.ls()
 		
 		for root, dirs, files in os.walk(os.path.join("archive", "timetables"), topdown=True):
 			for name in files:
 				if name not in remotef or name == "index.json":
 					path = os.path.join("archive", "timetables", name)
-
 					try:
-						ftp.storbinary('STOR '+name, open(path, 'rb'))
+						uploader.upload_file(path, name)
 						print("[*] Uploaded {}".format(path))
 					except:
 						print("[*] Uploaded {}".format(path))
-		
-		#ftp.cwd('/archive/timetables')
-		#ftp.storbinary('STOR '+archive_filename, open(os.path.join("archive", "timetables", archive_filename), 'rb'))
+
+
+import modules.notifications
+
+notifier = modules.notifications.Notification(cfg, forced=args.force_notification)

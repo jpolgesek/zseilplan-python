@@ -3,13 +3,18 @@
 import os
 import sys
 import json
-import utils
+import modules.hasher
 
 ARCHIVE_DIR = "archive"
 
+
+if not os.path.isfile(os.path.join(ARCHIVE_DIR, "internal_index.json")):
+	with open(os.path.join(ARCHIVE_DIR, "internal_index.json"), "w", encoding="UTF-8") as f:
+		f.write("{}")
+
 def start_indexer():
 	known_hashes = []
-	
+
 	with open(os.path.join(ARCHIVE_DIR, "internal_index.json"), "r") as f:
 		first_hash_apperances = json.load(f)
 
@@ -84,22 +89,22 @@ def start_reindexer():
 				
 				data_json = json.loads(data)
 
-				if utils.hash_output(data) in known_hashes:
+				if modules.hasher.hash_output(data) in known_hashes:
 					os.remove(os.path.join(r, file))
 				else:
-					if data_json["hash"] == utils.hash_output(data):
+					if data_json["hash"] == modules.hasher.hash_output(data):
 						print("HASH OK: {}".format(file))
 						print(data_json["hash"])
-						print(utils.hash_output(data))
+						print(modules.hasher.hash_output(data))
 					else:
 						print("Fixing hash")
 						print("IS:     " + data_json["hash"])
-						print("WILL BE:" + utils.hash_output(data))
-						data = data.replace(data_json["hash"], utils.hash_output(data))
+						print("WILL BE:" + modules.hasher.hash_output(data))
+						data = data.replace(data_json["hash"], modules.hasher.hash_output(data))
 						with open(os.path.join(r, file), "w") as f:
 							f.write(data)
 					
-					known_hashes.append(utils.hash_output(data))
+					known_hashes.append(modules.hasher.hash_output(data))
 
 					
 
@@ -138,5 +143,5 @@ if __name__ == "__main__":
 a = sys.argv[1]
 
 with open("archive\\timetables\\" + a, "r") as f:
-	print(utils.hash_test(f.read()))
+	print(modules.hasher.hash_test(f.read()))
 '''

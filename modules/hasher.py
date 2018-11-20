@@ -1,7 +1,6 @@
 #coding: utf-8
 import hashlib
 import json
-import sys
 
 def hash_output(output):
 	output = json.loads(output)
@@ -51,26 +50,3 @@ def hash_test(output):
 	print("G: {}".format(hex_dig))
 	
 	return str(hex_dig)
-
-
-def log(text, end="\n", overwrite = False):
-	if overwrite:
-		sys.stdout.write('\r')
-	sys.stdout.write(text)
-	sys.stdout.write(end)
-	sys.stdout.flush()
-
-	return True
-
-def step(text, state = "    "):
-	if state == "    ":
-		log("[{}] {}".format(state, text), end="")
-	else:
-		log("[{}] {}".format(state, text), overwrite=True)
-	
-	return True
-
-def debug(text = "", level=2):
-	#TODO: check level
-	#log(text)
-	return True
