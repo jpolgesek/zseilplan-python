@@ -44,8 +44,27 @@ if cfg.timetable_engine == "www":
 		timetable_parser.load_teacher_recovery(cfg.teacher_recovery_filename)
 	timetable_parser.base_url = cfg.timetable_url
 elif cfg.timetable_engine == "vulcan":
+	from modules import VulcanAPI
+	vapi = VulcanAPI.VulcanAPI()
+
+	modules.utils.step("Vulcan - authentication")
+	if vapi.login(cfg.vulcan_login, cfg.vulcan_password):
+		modules.utils.step("Vulcan - authentication", state=" OK ")
+	else:
+		modules.utils.step("Vulcan - authentication", state="FAIL")
+		exit()
+	
 	from parsers import vulcanparser
 	timetable_parser = vulcanparser.vulcan_parser()
+
+	timetable = vapi.get_timetable()
+	modules.utils.step("Vulcan - downloading timetable")
+	if not timetable:
+		modules.utils.step("Vulcan - downloading timetable", state="FAIL")
+		exit()
+	else:
+		modules.utils.step("Vulcan - downloading timetable", state=" OK ")
+		timetable_parser.load_data_from_text(json.dumps(timetable))
 else:
 	print("No such timetable engine: {}".format(cfg.timetable_engine))
 	exit(1)

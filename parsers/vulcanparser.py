@@ -8,6 +8,8 @@ import config
 vulcan_parser - module for parsing timetable from vulcan.
 """
 
+config_debug_type = 1
+
 class vulcan_parser:
     json_data = None
 
@@ -48,9 +50,9 @@ class vulcan_parser:
                 "end":    end
             }
 
-            if config.debug_type == 2:
+            if config_debug_type == 2:
                 self.print("ID: {}, od {} do {}".format(item_id, start, end), indent=1)
-            elif config.debug_type == 1:
+            elif config_debug_type == 1:
                 self.print(".", end="")
             
         return True
@@ -65,9 +67,9 @@ class vulcan_parser:
                 "main_topic_id": item["IdPrzedmiotGlowny"]
             }
 
-            #if config.debug_type == 2:
+            #if config_debug_type == 2:
             #    self.print("ID: {}, short: {}".format(item["Id"], item["Kod"]), indent=1)
-            #elif config.debug_type == 1:
+            #elif config_debug_type == 1:
             #    self.print(".", end="")
         return True
 
@@ -79,9 +81,9 @@ class vulcan_parser:
                 "short": item["Kod"]
             }
 
-            if config.debug_type == 2:
+            if config_debug_type == 2:
                 self.print("ID: {}, kod: {}".format(item["Id"], item["Kod"]), indent=1)
-            elif config.debug_type == 1:
+            elif config_debug_type == 1:
                 self.print(".", end="")
         
         return True
@@ -97,9 +99,9 @@ class vulcan_parser:
                 "name": item["Nazwa"]
             }
 
-            if config.debug_type == 2:
+            if config_debug_type == 2:
                 self.print("ID: {}, name: {}".format(item["Id"], item["Nazwa"]), indent=1)
-            elif config.debug_type == 1:
+            elif config_debug_type == 1:
                 self.print(".", end="")
 
         return True
@@ -113,9 +115,9 @@ class vulcan_parser:
 
             self.teachermap[item["DisplayValue"].split("[")[0]] = item["Kod"].upper()
 
-            if config.debug_type == 2:
+            if config_debug_type == 2:
                 self.print("ID: {}, name: {}".format(item["Id"], item["DisplayValue"]), indent=1)
-            elif config.debug_type == 1:
+            elif config_debug_type == 1:
                 self.print(".", end="")
 
         #posortuj po dlugiej nazwie
@@ -141,9 +143,9 @@ class vulcan_parser:
                 "name": item["DisplayValue"]
             }
 
-            if config.debug_type == 2:
+            if config_debug_type == 2:
                 self.print("ID: {}, name {}".format(item["Id"], item["DisplayValue"]), indent=1)
-            elif config.debug_type == 1:
+            elif config_debug_type == 1:
                 self.print(".", end="")
 
         return True
@@ -246,7 +248,7 @@ class vulcan_parser:
             
             self.teachers_timetable[short_teacher][day][hour] = unit_temp
             
-            if config.debug_type == 3:
+            if config_debug_type == 3:
                 self.print("---")
                 self.print("Dzień {}, godzina lekcyjna {}, klasa {}".format(day, hour, unit))
                 self.print("Przedmiot {}".format(unit_temp["subjectShort"]))
@@ -261,10 +263,10 @@ class vulcan_parser:
             #self.print(item["PseudonimUcznia"])
             #self.print(item["Id"])
             
-            if config.debug_type == 2:
+            if config_debug_type == 2:
                 #self.print("ID: {}, name {}".format('0', '0'), indent=1)
                 pass
-            #elif config.debug_type == 1:
+            #elif config_debug_type == 1:
             #    self.print(".", end="")
             
         return True

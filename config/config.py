@@ -7,15 +7,24 @@ debug_type = 1
 
 class Config:
 	def __init__(self):
+		self.debug_type = 1
 		self.timetable_url = "http://www.zseil.edu.pl/rnowa/html/"
 		self.timetable_engine = "www"
 
 		self.overrides_url = "http://www.zseil.edu.pl/zastepstwa/"
 		self.overrides_engine = "www"
 
-		self.vulcan_login = "TODO"
-		self.vulcan_password = "TODO"
-		self.vulcan_access = "TODO"
+		self.vulcan_login = None
+		self.vulcan_password = None
+		self.vulcan_access = None
+
+		try:
+			with open(os.path.join("config", "secrets.txt"), "r") as f:
+				import base64
+				self.vulcan_login, self.vulcan_password = base64.b64decode(f.read().encode("UTF-8")).decode("UTF-8").split(":")
+				self.vulcan_access = "teacher"
+		except:
+			pass
 
 		self.overrides_stats = True
 		self.overrides_archiver = True
