@@ -64,7 +64,7 @@ elif cfg.timetable_engine == "vulcan":
 		exit()
 	else:
 		modules.utils.step("Vulcan - downloading timetable", state=" OK ")
-		timetable_parser.load_data_from_text(json.dumps(timetable))
+		timetable_parser.load_data_from_json(timetable)
 else:
 	print("No such timetable engine: {}".format(cfg.timetable_engine))
 	exit(1)

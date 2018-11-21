@@ -37,6 +37,10 @@ class vulcan_parser:
         self.json_data = json.loads(source_text)
         return True
 
+    def load_data_from_json(self, source_json):
+        self.json_data = source_json
+        return True
+
     def import_timesteps(self):
         for item in self.json_data["data"]["poryLekcji"]:
             item_id = item["Id"]
