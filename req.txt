@@ -4,3 +4,4 @@ unidecode
 pywebpush
 ftplib
 pysftp
+lxml
