@@ -18,6 +18,7 @@ print("SEMI-LEGACY OVERRIDES PARSER!!!!!!!!!")
 
 def search_for_overrides():
 	r = requests.get("http://www.zseil.edu.pl/zastepstwa/")
+	r.encoding = "UTF-8"
 	if r.status_code != 200:
 		return False
 	listparser = AdvancedHTMLParser.AdvancedHTMLParser()
