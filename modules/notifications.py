@@ -31,6 +31,7 @@ class Notification:
 			self.subscriptions = self.get_subscriptions()
 			self.verified_subscriptions = {}
 			self.send_to_all(message=message, url=url)
+			self.send_to_discord(message=message, url=url)
 
 			if len(self.verified_subscriptions) > 0:
 				self.set_subscriptions(self.verified_subscriptions)
@@ -39,6 +40,12 @@ class Notification:
 			print("Użyj parametru --force-notification aby to wymusić")
 			
 		return
+
+	def send_to_discord(self, message, url):
+		url = "https://discordapp.com/api/webhooks/***REMOVED***/***REMOVED***"
+		return requests.post(url, data={
+  			"content": message
+		})
 
 	def get_subscriptions(self):
 		self.cfg.uploader.chdir(self.cfg.target["rootdir_app"])
