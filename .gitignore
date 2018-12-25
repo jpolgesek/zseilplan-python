@@ -2,6 +2,8 @@ _do_not_upload/output
 _do_not_upload/__pycache__
 _do_not_upload/deployment_tool/output
 .htsubscriptions.json
+archive/
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
