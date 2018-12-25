@@ -50,6 +50,7 @@ class Notification:
 	def get_subscriptions(self):
 		self.cfg.uploader.chdir(self.cfg.target["rootdir_app"])
 		data = self.cfg.uploader.fetch_file(self.subscriptions_filename)
+		data = data.decode("UTF-8")
 		data = json.loads(data)
 		print("Znaleziono {} subskrybcji".format(len(data)))
 		return data
