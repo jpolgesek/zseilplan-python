@@ -3,6 +3,8 @@
 import os
 import sys
 import json
+import datetime
+import time
 import modules.hasher
 
 ARCHIVE_DIR = "archive"
@@ -28,6 +30,11 @@ def start_indexer():
 				data = None
 				with open(os.path.join(r, file), "r") as f:
 					data = json.load(f)
+				
+				temp_date =  data["_updateDate_min"] + data["_updateDate_max"]
+				if temp_date.find("<") != -1 or temp_date.find("[") != -1:
+					print("This was my internal job, skipping - {}".format(temp_date))
+					continue
 
 				if "_fetch_time" not in data:
 					data["_fetch_time"] = "00:00"
@@ -41,6 +48,7 @@ def start_indexer():
 					"hash": data["hash"][:8],
 					"time": data["_fetch_time"],
 					"export_datetime": first_hash_apperance,
+					"order_by": time.mktime(datetime.datetime.strptime(first_hash_apperance, "%d.%m.%Y %H:%M:%S").timetuple()),
 					"filename": file 
 				}
 
@@ -55,7 +63,8 @@ def start_indexer():
 					known_hashes.append(data["hash"])
 
 	temp = index["timetable_archives"]
-	temp = list(reversed(sorted(temp, key=lambda k: k['export_datetime'])))
+	#temp = list(reversed(sorted(temp, key=lambda k: k['export_datetime'])))
+	temp = list(reversed(sorted(temp, key=lambda k: k['order_by'])))
 	temp[0]['export_datetime'] += " (aktualny)"
 	index["timetable_archives"] = temp
 
