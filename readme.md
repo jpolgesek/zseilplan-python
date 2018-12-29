@@ -44,7 +44,7 @@
 Declare target as python dict:
 
 ```python
-targets[known_name] = {
+targets["known_name"] = {
 	"dev": True,
 	"http_rootdir_app": "/",
 	"http_rootdir_manifest": "/",
@@ -60,7 +60,7 @@ targets[known_name] = {
 }
 ```
 
-- **known_name** - name used when uploading - `python3 main.py known_name`
+- **"known_name"** (str) - name used when uploading - `python3 main.py known_name`
 - **"dev"** (bool) - should this target have enabled dev features
 - **"http_rootdir_app"** (str) - where app will be available via HTTP
 - **"http_rootdir_manifest"** (str) - where app manifest will be available via HTTP
