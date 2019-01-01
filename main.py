@@ -104,7 +104,7 @@ modules.utils.step("Eksportuję dane jako JSON w formacie zseilplanu 2.0")
 output = collections.OrderedDict()
 
 # TODO: current year plz
-output["_Copyright"] = "2018, Jakub Polgesek"
+output["_Copyright"] = "2019, Jakub Polgesek"
 
 output["_updateDate_min"] = min(timetable_parser.update_dates)
 output["_updateDate_max"] = max(timetable_parser.update_dates)
