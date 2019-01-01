@@ -1,10 +1,11 @@
 #coding: UTF-8
-import requests
-import json
-from pywebpush import webpush
 import os
+import json
+import time
 import config
 import datetime
+import requests
+from pywebpush import webpush
 from collections import OrderedDict
 
 
@@ -18,10 +19,11 @@ class Notification:
 		
 		diff = self.get_diff_string()
 
+		print("Stan diff'a: {}".format(diff))
+
 		if diff != False or forced:
 			if forced:
 				print("WYSŁANIE POWIADOMIENIA WYMUSZONE")
-				print("Stan diff'a: {}".format(diff))
 				message = "Już jest! Nowy, lepszy plan."
 			else:
 				message = "Już jest! Nowy, lepszy plan. Nie było przecież zmiany aż od {}".format(diff)
@@ -30,8 +32,8 @@ class Notification:
 
 			self.subscriptions = self.get_subscriptions()
 			self.verified_subscriptions = {}
-			self.send_to_all(message=message, url=url)
 			self.send_to_discord(message=message, url=url)
+			self.send_to_all(message=message, url=url)
 
 			if len(self.verified_subscriptions) > 0:
 				self.set_subscriptions(self.verified_subscriptions)
@@ -105,15 +107,24 @@ class Notification:
 
 		hashes_2 = {}
 		for k in hashes:
-			hashes_2[hashes[k]] = k
+			# k => hash
+			#date = hashes[k]
+			date = int(time.mktime(datetime.datetime.strptime(hashes[k], "%d.%m.%Y %H:%M:%S").timetuple()))
+			hashes_2[date] = {
+				"k": k,
+				"o_date": hashes[k]
+			}
 		hashes_by_date = hashes_2
 		hashes_2 = sorted(hashes_2)
 
-		date_new = hashes_2[-1]
-		date_old = hashes_2[-2]
+		date_new = hashes_by_date[hashes_2[-1]]["o_date"]
+		date_old = hashes_by_date[hashes_2[-2]]["o_date"]
 
 		date_new = datetime.datetime.strptime(date_new, "%d.%m.%Y %H:%M:%S")
 		date_old = datetime.datetime.strptime(date_old, "%d.%m.%Y %H:%M:%S")
+
+		print("Diff new: {}".format(str(date_new)))
+		print("Diff old: {}".format(str(date_old)))
 
 		difference = date_new - date_old
 		difference_hour = difference.seconds//3600
@@ -129,12 +140,14 @@ class Notification:
 		else:
 			difference_string = "{} dni".format(difference.days)
 		
-		if hashes_by_date[hashes_2[-1]] not in sentFor["sentFor"]:
-			sentFor["sentFor"].append(hashes_by_date[hashes_2[-1]])
+		if hashes_by_date[hashes_2[-1]]["k"] not in sentFor["sentFor"]:
+			print("Sending first time for hash: {}".format(hashes_by_date[hashes_2[-1]]["k"]))
+			sentFor["sentFor"].append(hashes_by_date[hashes_2[-1]]["k"])
 			with open(os.path.join(self.archive_dir, "notifications_index.json"), "w", encoding="UTF-8") as f:
 				f.write(json.dumps(sentFor))
 			return difference_string
 		else:
+			print("Already sent notification for hash: {}".format(hashes_by_date[hashes_2[-1]]["k"]))
 			return False
 
 
