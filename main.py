@@ -112,7 +112,9 @@ output["_updateDate_max"] = max(timetable_parser.update_dates)
 output['teachers'] = timetable_parser.teachers
 try:
 	output['teachers_new'] = timetable_parser.new_teachers
-except:
+except Exception as e:
+	print("Błąd podczas tworzenia elementu teachers_new.")
+	print("Exception: {}".format(str(e)))
 	pass
 output['timetable'] = timetable_parser.timetable
 output['units'] = sorted(timetable_parser.units)
