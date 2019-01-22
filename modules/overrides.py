@@ -24,8 +24,13 @@ def search_for_overrides():
 	listparser = AdvancedHTMLParser.AdvancedHTMLParser()
 	listparser.parseStr(r.text)
 	totalOutput = {}
-	for li in listparser.getElementById("panel_srodkowy_szerszy")[0][1][0]:
-		url = "http://www.zseil.edu.pl/zastepstwa/{}".format(li[0].href)
+	
+	panel = listparser.getElementById("panel_srodkowy_szerszy").getHTML()
+	listparser = AdvancedHTMLParser.AdvancedHTMLParser()
+	listparser.parseStr(panel)
+
+	for li in listparser.getElementsByTagName("a"):
+		url = "http://www.zseil.edu.pl/zastepstwa/{}".format(li.href)
 		url = url.replace("\\", "/")
 		z = requests.get(url)
 		z.encoding = "UTF-8"
@@ -43,13 +48,11 @@ def parse_text(o, text, date_fallback=None):
 	text_parser = AdvancedHTMLParser.AdvancedHTMLParser()
 	text_parser.parseStr(text)
 	for table in text_parser.getElementsByTagName("table"):
-		print("Found table - parsing")
 		parse_table(o, table.getChildren(), text_parser, date_fallback)
 		break #NIE PARSUJ KOLEJNYCH TABEL
 
 
 def parse_table(o, table, html_all=None, date_fallback=None):
-	print("Parsuje tabele: date_fallback={}".format(str(date_fallback)))
 	output = dict()
 	
 	cday = ""
