@@ -66,15 +66,29 @@ def parse_table(o, table, html_all=None, date_fallback=None):
 				day = day.split("(")[0]
 				day = day.strip()
 			elif html_all != None: #jest w h1
+				day_ok = False
 				try:
-					print("<h1>")
-					day = html_all.getElementsByTagName("h1")[1].innerText
+					print("<h1> - a")
+					day = html_all.getElementsByTagName("h1")[0].innerText
 					day = day.split(": ")[1]
 					day = day.split(" (")[0]
 					day = day.strip()
+					temp_fix_check = datetime.datetime.strptime(cday, "%d.%m.%Y").date().weekday() + 1
+					day_ok = True
 				except:
 					print("Fallback, bo ktos edytowal recznie html -.-")
-					day = "{}.{}.{}".format(date_fallback[2],date_fallback[1],date_fallback[0].split("/")[-1])
+				
+				if not day_ok:
+					try:
+						print("<h1> - b")
+						day = html_all.getElementsByTagName("h1")[1].innerText
+						day = day.split(": ")[1]
+						day = day.split(" (")[0]
+						day = day.strip()
+						temp_fix_check = datetime.datetime.strptime(cday, "%d.%m.%Y").date().weekday() + 1
+					except:
+						print("Fallback, bo ktos edytowal recznie html -.-")
+						day = "{}.{}.{}".format(date_fallback[2],date_fallback[1],date_fallback[0].split("/")[-1])
 			else:
 				print("Fail, nie znam tego formatu zastepstw")
 				return
