@@ -1,0 +1,23 @@
+stages:
+  - build
+  - deploy
+
+build:
+  image: $CI_REGISTRY/jpolgesek/dpkger:2.0
+  stage: build
+  script: 
+    - /app/build.sh
+  artifacts:
+    paths: 
+      - target.deb
+
+
+deploy:
+  image: $CI_REGISTRY/flyingarmageddon/ansible-ci:preconfigured
+  stage: deploy
+  script:
+    - cp "$ANSIBLE_SSH_PRIV" /etc/ansible/id_rsa
+    - chmod 400 /etc/ansible/id_rsa
+    - cp target.deb /tmp/target.deb
+
+    - ansible-playbook /etc/ansible/install_deb.yml
