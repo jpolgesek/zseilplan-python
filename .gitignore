@@ -3,7 +3,9 @@ _do_not_upload/__pycache__
 _do_not_upload/deployment_tool/output
 .htsubscriptions.json
 archive/
+.vscode/
 output/
+*.exe
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
