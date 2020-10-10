@@ -15,10 +15,6 @@ config:
               type: "docker"
               docker_container: "supercleverplan"
 
-    hooks:
-        post_copy: "hook.sh post_copy"
-        post_finish: "hook.sh post_finish"
-
     storage:
       entries:
           - path: "/var/flying/supercleverplan-backend"
