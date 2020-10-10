@@ -13,7 +13,7 @@ config:
             - time: "*/5 * * * *"
               command: "python3 run.py -h"
               type: "docker"
-              container_name: "supercleverplan"
+              docker_container: "supercleverplan"
 
     hooks:
         post_copy: "hook.sh post_copy"
