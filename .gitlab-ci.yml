@@ -1,0 +1,7 @@
+
+image: busybox
+
+dummyTask:
+  stage: dummy
+  script:
+    - echo 'Dummy commit to enable gitlab CI'
