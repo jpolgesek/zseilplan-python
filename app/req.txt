@@ -1,0 +1,7 @@
+requests
+AdvancedHTMLParser
+unidecode
+pywebpush
+#ftplib
+pysftp
+lxml

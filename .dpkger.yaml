@@ -1,0 +1,24 @@
+format_version: 2.0
+
+meta:
+    name: "Super Clever Plan Backend"
+    type: "docker"
+    slug:  "supercleverplan-backend"
+    version: "2.0.0"
+
+config:
+    cron:
+        enabled: true
+        entries:
+            - time: "*/5 * * * *"
+              command: "python3 run.py -h"
+              type: "docker"
+              container_name: "supercleverplan"
+
+    hooks:
+        post_copy: "hook.sh post_copy"
+        post_finish: "hook.sh post_finish"
+
+    storage:
+      entries:
+          - path: "/var/flying/supercleverplan-backend"
