@@ -255,9 +255,16 @@ class TimetableWWWProvider:
         sorted_teachers = {k: v for k, v in sorted(real_teachers.items(), key=lambda item: item[1])} 
         sorted_teachers.update({k: v for k, v in sorted(fake_teachers.items(), key=lambda item: item[1])})
 
+        time_string = "Unknown timestamp"
+
+        try:
+            time_string = datetime.datetime.now().isoformat()
+        except:
+            pass
+
         output = {
             "_Copyright":       f"{datetime.now().year}, Jakub Polgesek",
-            "comment":          "Wyeksportowano [TODO]",
+            "comment":          f"Wyeksportowano {time_string}",
             "hash":             "!DEV!",
 
             "_updateDate_min":  min(self.timetable_data.update_dates),
