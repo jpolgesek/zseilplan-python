@@ -4,3 +4,6 @@ services:
     build: .
     environment:
       - IS_PRODUCTION
+    volumes:
+      - /var/flying/supercleverplan-backend/preparsed:/var/plandata/preparsed
+      - /var/flying/supercleverplan-backend/out:/var/plandata/out
