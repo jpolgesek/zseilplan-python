@@ -13,7 +13,7 @@ config:
         enabled: true
         entries:
             - time: "*/5 * * * *"
-              command: "python3 run.py --teachermap-file /var/plandata/preparsed/teachermap.json --output /var/plandata/out/data.json timetable && chmod +x /app/upload.sh && bash /app/upload.sh"
+              command: "bash -c 'python3 run.py --teachermap-file /var/plandata/preparsed/teachermap.json --output /var/plandata/out/data.json timetable && chmod +x /app/upload.sh && bash /app/upload.sh'"
               type: "docker"
               docker_container: "supercleverplan"
 

@@ -2,6 +2,8 @@ version: "3.7"
 services:
   supercleverplan:
     build: .
+    env_file:
+      - main.env
     environment:
       - IS_PRODUCTION
     volumes:
