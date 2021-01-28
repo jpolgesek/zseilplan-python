@@ -7,5 +7,7 @@ services:
     environment:
       - IS_PRODUCTION
     volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
       - /var/flying/supercleverplan-backend/preparsed:/var/plandata/preparsed
       - /var/flying/supercleverplan-backend/out:/var/plandata/out
