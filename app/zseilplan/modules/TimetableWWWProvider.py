@@ -258,7 +258,7 @@ class TimetableWWWProvider:
         time_string = "Unknown timestamp"
 
         try:
-            time_string = datetime.datetime.now().isoformat()
+            time_string = datetime.now().isoformat()
         except:
             pass
 
