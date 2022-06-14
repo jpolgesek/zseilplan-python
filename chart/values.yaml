@@ -11,7 +11,7 @@ cronjobs:
       - name: harbor-auth
 
   jobs:
-    examplejob:
+    timetable_sync:
       enabled: true
       schedule: "*/5 * * * *"
       
