@@ -8,5 +8,5 @@ variables:
   K8S_NAMESPACE: zseilplan
   HARBOR_REPO: backend
 
-  HELM_ARGUMENTS: --set cronjobs.timetable_sync.image.repository=${HARBOR_BASE}/${HARBOR_REPO} --set cronjobs.timetable_sync.image.tag=${HARBOR_TAG}
+  HELM_ARGUMENTS: --set cronjobs.jobs.timetablesync.image.repository=${HARBOR_BASE}/${HARBOR_REPO} --set cronjobs.jobs.timetablesync.image.tag=${HARBOR_TAG}
   HELM_RELEASE_NAME: zseilplan-backend-test
