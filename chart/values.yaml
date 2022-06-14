@@ -1,7 +1,7 @@
 appName: zseilplan-backend
 
 volumes:
-  zseilplan_backend:
+  zseilplan-backend:
     storageClassName: nfs-client
     requestSize: 2Gi
 
@@ -25,5 +25,5 @@ cronjobs:
       args: ["-c", "python3 run.py --teachermap-file /var/plandata/preparsed/teachermap.json --output /var/plandata/out/data.json timetable && chmod +x /app/upload.sh && bash /app/upload.sh"]
 
       volumes:
-        - name: zseilplan_backend
+        - name: zseilplan-backend
           mountPath: /var/plandata
