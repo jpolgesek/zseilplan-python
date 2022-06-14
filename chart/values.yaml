@@ -26,4 +26,4 @@ cronjobs:
 
       volumes:
         - name: zseilplan_backend
-          mountPath: /var/flying/supercleverplan-backend/
+          mountPath: /var/plandata
