@@ -1,3 +1,12 @@
 include:
-  - project: 'jpolgesek/dpkger'
-    file: '/external-ci.yml'
+  - project: 'FlyingArmageddon/k8s-deploy-utils'
+    ref: main
+    file: '/templates/ci-auto.yml'
+
+
+variables:
+  K8S_NAMESPACE: zseilplan
+  HARBOR_REPO: backend
+
+  HELM_ARGUMENTS: --set cronjobs.timetable_sync.image.repository=${HARBOR_BASE}/${HARBOR_REPO} --set cronjobs.timetable_sync.image.tag=${HARBOR_TAG}
+  HELM_RELEASE_NAME: zseilplan-backend-test

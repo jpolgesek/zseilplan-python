@@ -1,0 +1,29 @@
+appName: zseilplan-backend
+
+volumes:
+  zseilplan_backend:
+    storageClassName: nfs-client
+    requestSize: 2Gi
+
+cronjobs:
+  shared:
+    imagePullSecrets: 
+      - name: harbor-auth
+
+  jobs:
+    examplejob:
+      enabled: true
+      schedule: "*/5 * * * *"
+      
+      imagePullPolicy: Always
+      restartPolicy: Never
+      image: 
+        repository: null
+        tag: null
+
+      command: ["/bin/bash"]
+      args: ["-c", "python3 run.py --teachermap-file /var/plandata/preparsed/teachermap.json --output /var/plandata/out/data.json timetable && chmod +x /app/upload.sh && bash /app/upload.sh"]
+
+      volumes:
+        - name: zseilplan_backend
+          mountPath: /var/flying/supercleverplan-backend/
