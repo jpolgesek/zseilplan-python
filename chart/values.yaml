@@ -17,6 +17,11 @@ cronjobs:
       
       imagePullPolicy: Always
       restartPolicy: Never
+
+      envFrom:
+      - configMapRef:
+          name: zseilplan-prod-config
+
       image: 
         repository: null
         tag: null
