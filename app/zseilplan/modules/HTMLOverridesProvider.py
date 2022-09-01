@@ -99,7 +99,11 @@ class HTMLOverrideProvider:
         ] = self.current_container.get_json()
 
     def search(self):
-        self.overrides_urls = self.get_overrides_urls()
+        try:
+            self.overrides_urls = self.get_overrides_urls()
+        except Exception as e:
+            print("get_overrides_urls() failed", e)
+            self.overrides_urls = []
         return True
 
     def parse(self):
