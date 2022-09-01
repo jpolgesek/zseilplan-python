@@ -5,3 +5,4 @@ pywebpush
 #ftplib
 pysftp
 lxml
+pysocks
