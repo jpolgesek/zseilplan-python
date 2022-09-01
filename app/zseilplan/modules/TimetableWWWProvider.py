@@ -3,7 +3,7 @@ import json
 from typing import Dict, List
 from requests import Session, Response
 from datetime import datetime
-from app.zseilplan.modules.SharedConfig import SharedConfig
+from zseilplan.modules.SharedConfig import SharedConfig
 
 import zseilplan.modules.utils
 from AdvancedHTMLParser import AdvancedHTMLParser
