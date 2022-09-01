@@ -1,4 +1,5 @@
 #coding: utf-8
+from typing import Any, Dict
 import requests
 import AdvancedHTMLParser
 import json
@@ -16,18 +17,28 @@ except:
 
 print("SEMI-LEGACY OVERRIDES PARSER!!!!!!!!!")
 
-def search_for_overrides():
-	r = requests.get("http://www.zseil.edu.pl/zastepstwa/")
-	r.encoding = "UTF-8"
+def search_for_overrides() -> Dict[Any, Any]:
+	try:
+		r = requests.get("http://www.zseil.edu.pl/zastepstwa/")
+		r.encoding = "UTF-8"
+	except Exception as e:
+		print(e)
+		return {}
+
 	if r.status_code != 200:
-		return False
+		return {}
+	
 	listparser = AdvancedHTMLParser.AdvancedHTMLParser()
 	listparser.parseStr(r.text)
 	totalOutput = {}
 	
-	panel = listparser.getElementById("panel_srodkowy_szerszy").getHTML()
+	panel = listparser.getElementById("panel_srodkowy_szerszy")
+	
+	if panel is None:
+		return {}
+	
 	listparser = AdvancedHTMLParser.AdvancedHTMLParser()
-	listparser.parseStr(panel)
+	listparser.parseStr(panel.getHTML())
 
 	for li in listparser.getElementsByTagName("a"):
 		url = "http://www.zseil.edu.pl/zastepstwa/{}".format(li.href)
@@ -41,6 +52,7 @@ def search_for_overrides():
 			print("Zastepstwo w htmlu, parsuje! ({})".format(url))
 			date_fallback = url.split("-")
 			parse_text(totalOutput, z.text, date_fallback)
+	
 	return totalOutput
 
 

@@ -18,7 +18,7 @@ parser.add_argument("--teachermap-file", required=False)
 parser.add_argument("--output", required=True)
 args = parser.parse_args()
 
-ovr = HTMLOverrideProvider("http://www.zseil.edu.pl/zastepstwa/")
+ovr = HTMLOverrideProvider("https://www.zseil.edu.pl/zastepstwa/")
 if args.teachermap_file:
     ovr.teachermap_load_from_file(args.teachermap_file)
 
@@ -29,7 +29,7 @@ print("Parse overrides")
 override_output = ovr.parse()
 
 
-www_provider = TimetableWWWProvider(url="http://www.zseil.edu.pl/rnowa/html/")
+www_provider = TimetableWWWProvider(url="https://www.zseil.edu.pl/rnowa/html/")
 www_provider.add_override_data(override_output)
 
 if args.teachermap_file:

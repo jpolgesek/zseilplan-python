@@ -53,7 +53,7 @@ class TimetableWWWProvider:
 
             if resp.status_code != 200:
                 raise SystemError(
-                    f"Server has returned HTTP {resp.status_code} during download of units. Please check your configuration."
+                    f"Server has returned HTTP {resp.status_code} during download of unit '{unit}'. Please check your configuration."
                 )
 
             self.parser.parseStr(resp.text)
