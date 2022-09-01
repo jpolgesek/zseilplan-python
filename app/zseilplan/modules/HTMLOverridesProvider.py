@@ -24,8 +24,9 @@ class HTMLOverrideProvider:
     def get_overrides_urls(self):
         r = requests.get(self.url)
         r.encoding = "UTF-8"
+        
         if r.status_code != 200:
-            return False
+            return []
 
         listparser = AdvancedHTMLParser()
         listparser.parseStr(r.text)
