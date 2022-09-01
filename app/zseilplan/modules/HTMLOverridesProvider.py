@@ -1,7 +1,7 @@
 import json
 import requests
 from AdvancedHTMLParser import AdvancedHTMLParser
-from modules.SharedConfig import SharedConfig
+from zseilplan.modules.SharedConfig import SharedConfig
 from zseilplan.model.OverrideContainer import OverrideContainer
 from zseilplan.model.RawOverrideItem import RawOverrideItem
 
