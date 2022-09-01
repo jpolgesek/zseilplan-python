@@ -23,4 +23,4 @@ class SingletonMeta(type):
 
 
 class SharedConfig(metaclass=SingletonMeta):
-    requests_proxies: Dict[str, str]
+    requests_proxies: Dict[str, str] = {}
