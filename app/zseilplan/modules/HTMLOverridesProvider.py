@@ -1,6 +1,7 @@
 import json
 import requests
 from AdvancedHTMLParser import AdvancedHTMLParser
+from app.zseilplan.modules.SharedConfig import SharedConfig
 from zseilplan.model.OverrideContainer import OverrideContainer
 from zseilplan.model.RawOverrideItem import RawOverrideItem
 
@@ -22,7 +23,7 @@ class HTMLOverrideProvider:
         return True
 
     def get_overrides_urls(self):
-        r = requests.get(self.url)
+        r = requests.get(self.url, proxies=SharedConfig().requests_proxies)
         r.encoding = "UTF-8"
         
         if r.status_code != 200:
@@ -51,7 +52,7 @@ class HTMLOverrideProvider:
         return urls
 
     def download_single_override_file(self, url):
-        r = requests.get(url)
+        r = requests.get(url, proxies=SharedConfig().requests_proxies)
         r.encoding = "UTF-8"
 
         if r.status_code != 200:

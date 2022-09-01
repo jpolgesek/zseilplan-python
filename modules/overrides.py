@@ -7,6 +7,8 @@ import datetime
 import html
 from unidecode import unidecode
 
+from app.zseilplan.modules.SharedConfig import SharedConfig
+
 # Placeholder, will be replaced by reference to main cfg object
 # This is only to satisfy builtin vs code verifier
 try:
@@ -19,10 +21,10 @@ print("SEMI-LEGACY OVERRIDES PARSER!!!!!!!!!")
 
 def search_for_overrides() -> Dict[Any, Any]:
 	try:
-		r = requests.get("http://www.zseil.edu.pl/zastepstwa/")
+		r = requests.get("http://www.zseil.edu.pl/zastepstwa/", proxies=SharedConfig().requests_proxies)
 		r.encoding = "UTF-8"
 	except Exception as e:
-		print(e)
+		print("search_for_overrides exception:", e)
 		return {}
 
 	if r.status_code != 200:
@@ -43,7 +45,7 @@ def search_for_overrides() -> Dict[Any, Any]:
 	for li in listparser.getElementsByTagName("a"):
 		url = "http://www.zseil.edu.pl/zastepstwa/{}".format(li.href)
 		url = url.replace("\\", "/")
-		z = requests.get(url)
+		z = requests.get(url, proxies=SharedConfig().requests_proxies)
 		z.encoding = "UTF-8"
 		if r.status_code != 200:
 			exit(r.status_code)

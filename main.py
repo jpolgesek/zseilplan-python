@@ -1,4 +1,5 @@
 #coding: UTF-8
+from app.zseilplan.modules.SharedConfig import SharedConfig
 import modules.utils
 modules.utils.check_python_version()
 
@@ -20,7 +21,13 @@ from datetime import datetime
 import argparse
 modules.utils.step("Loading program", state=" OK ")
 
+if os.getenv("HTTP_PROXY") is not None:
+	SharedConfig().requests_proxies["http"] = os.getenv("HTTP_PROXY", "")
 
+if os.getenv("HTTPS_PROXY") is not None:
+	SharedConfig().requests_proxies["https"] = os.getenv("HTTPS_PROXY", "")
+
+print("PROXY CONFIG", SharedConfig().requests_proxies)
 
 modules.utils.step("Loading configuration")
 from config import config

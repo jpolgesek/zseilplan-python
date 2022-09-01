@@ -3,6 +3,7 @@ import requests
 from AdvancedHTMLParser import AdvancedHTMLParser
 import collections
 from unidecode import unidecode
+from app.zseilplan.modules.SharedConfig import SharedConfig
 import modules.utils
 import json
 import re
@@ -51,7 +52,7 @@ class www_parser:
 		returns: bool (True/False)
 		'''
 
-		resp = self.http.get("{}/lista.html".format(self.base_url))
+		resp = self.http.get("{}/lista.html".format(self.base_url), proxies=SharedConfig().requests_proxies)
 		resp.encoding = "UTF-8"
 
 		if resp.status_code != 200:
@@ -74,7 +75,7 @@ class www_parser:
 		'''
 
 		unit_url = next(iter(self.units.values()))
-		resp = self.http.get("{}/{}".format(self.base_url, unit_url))
+		resp = self.http.get("{}/{}".format(self.base_url, unit_url), proxies=SharedConfig().requests_proxies)
 		resp.encoding = "UTF-8"
 
 		if resp.status_code != 200:
@@ -185,7 +186,7 @@ class www_parser:
 	def get_units_list(self):
 		'''Returns list of units, that are described in currently set timetable url'''
 
-		resp = self.http.get("{}/lista.html".format(self.base_url))
+		resp = self.http.get("{}/lista.html".format(self.base_url), proxies=SharedConfig().requests_proxies)
 		resp.encoding = "UTF-8"
 		if resp.status_code != 200:
 			print("[E] Serwer zwrócił kod błędu {} przy próbie pobrania listy klas".format(resp.status_code))
@@ -214,7 +215,7 @@ class www_parser:
 		modules.utils.step("Przetwarzam plan lekcji klasy {}".format(unit_name))
 		unit_url = self.units[unit_name]
 		
-		resp = self.http.get("{}/{}".format(self.base_url, unit_url))
+		resp = self.http.get("{}/{}".format(self.base_url, unit_url), proxies=SharedConfig().requests_proxies)
 		resp.encoding = "UTF-8"
 		if resp.status_code != 200:
 			print("[E] Serwer zwrócił kod błędu {} przy próbie pobrania planu klasy {} (url {})".format(resp.status_code, unit_name, unit_url))

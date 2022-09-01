@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import json
-from requests import Session
+from typing import Dict, List
+from requests import Session, Response
 from datetime import datetime
+from app.zseilplan.modules.SharedConfig import SharedConfig
 
 import zseilplan.modules.utils
 from AdvancedHTMLParser import AdvancedHTMLParser
@@ -22,12 +24,12 @@ class TimetableWWWProvider:
         self.timetable_data = TimetableData()
         self.parser = AdvancedHTMLParser()
 
-    def http_get(self, url, encoding="UTF-8"):
-        resp = self._http.get(f"{self._url}/{url}")
+    def http_get(self, url, encoding="UTF-8") -> Response:
+        resp = self._http.get(f"{self._url}/{url}", proxies=SharedConfig().requests_proxies)
         resp.encoding = encoding
         return resp
 
-    def get_units_urls(self) -> list:
+    def get_units_urls(self) -> Dict[str, str]:
         resp = self.http_get("lista.html")
 
         if resp.status_code != 200:
@@ -41,14 +43,17 @@ class TimetableWWWProvider:
         output = {unit.innerText.upper(): unit.href for unit in units}
         return output
 
-    def get_units(self, url_dict: dict) -> list:
+    def get_units(self, url_dict: Dict[str, str]) -> List[str]:
         return sorted(list(url_dict.keys()))
 
     def import_timesteps(self):
-        all_timesteps = []
+        all_timesteps: List[List[str]] = []
+
+        if self._units is None:
+            return all_timesteps
 
         for unit in self._units:
-            unit_url = self._units[unit]
+            unit_url = self._units.get(unit)
             resp = self.http_get(unit_url)
 
             if resp.status_code != 200:
@@ -64,6 +69,7 @@ class TimetableWWWProvider:
             )
 
             timesteps = []
+
             for time_block in time_blocks:
                 timesteps += list(map(str.strip, time_block.innerText.split("-")))
 
